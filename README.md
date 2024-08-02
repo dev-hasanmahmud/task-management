@@ -18,6 +18,7 @@ Tech Stack: Laravel, MySQL, JWT Authentication, PHPUnit
 	- `Login:(Method- POST) http://127.0.0.1:8000/api/v1/auth/login`
 	- `Refresh:(Method- POST) http://127.0.0.1:8000/api/v1/auth/refresh`
 	- `Profile:(Method- GET) http://127.0.0.1:8000/api/v1/auth/profile`
+	- `Profile Update:(Method- POST) http://127.0.0.1:8000/api/v1/auth/profile`
 	- `Logout:(Method- POST) http://127.0.0.1:8000/api/v1/auth/logout`
 
 - Task
@@ -25,3 +26,9 @@ Tech Stack: Laravel, MySQL, JWT Authentication, PHPUnit
 	- `Store:(Method- POST) http://127.0.0.1:8000/api/v1/task`
 	- `Update:(Method- POST) http://127.0.0.1:8000/api/v1/task/1`
 	- `Delete:(Method- Delete) http://127.0.0.1:8000/api/v1/task/2`
+
+- Category
+	- `Read:(Method- GET) http://127.0.0.1:8000/api/v1/categories`
+	- `Store:(Method- POST) http://127.0.0.1:8000/api/v1/category`
+	- `Update:(Method- POST) http://127.0.0.1:8000/api/v1/category/1`
+	- `Delete:(Method- Delete) http://127.0.0.1:8000/api/v1/category/2`

@@ -12,6 +12,10 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $query = Task::where('user_id', Auth::id());
+        
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
 
         if ($request->has('status')) {
             $query->where('status', $request->input('status'));
@@ -21,7 +25,7 @@ class TaskController extends Controller
             $query->whereDate('due_date', $request->input('due_date'));
         }
 
-        $tasks = $query->paginate(10);
+        $tasks = $query->with('category')->paginate(10);
 
         return response()->json($tasks);
     }
@@ -32,6 +36,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
+            'category_id' => 'required|exists:categories,id',
             'status' => ['required', Rule::in(['completed', 'pending'])],
         ]);
 
@@ -39,6 +44,7 @@ class TaskController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'due_date' => $request->due_date,
+            'category_id' => $request->category_id,
             'status' => $request->status,
             'user_id' => Auth::id(),
         ]);
@@ -61,7 +67,7 @@ class TaskController extends Controller
             'status' => ['sometimes', Rule::in(['completed', 'pending'])],
         ]);
 
-        $task->update($request->only(['title', 'description', 'due_date', 'status']));
+        $task->update($request->only(['title', 'description', 'due_date', 'category_id', 'status']));
 
         return response()->json($task);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\User;
 use Validator;
 
@@ -58,6 +59,37 @@ class AuthController extends Controller
     public function profile()
     {
         return response()->json(auth()->user());
+    }
+    
+    /**
+     * Update the authenticated user's profile.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateProfile(Request $request)
+    {
+        $validator = Validator::make(request()->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|confirmed|min:8',
+        ]);
+  
+        if($validator->fails()){
+            return response()->json($validator->errors()->toJson(), 400);
+        }
+
+        $user = auth()->user();
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->input('password'));
+        }
+        
+        $user->save();
+
+        return response()->json($user);
     }
   
     /**
