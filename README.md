@@ -12,14 +12,6 @@ Tech Stack: Laravel, MySQL, JWT Authentication, PHPUnit
 - Run `php artisan migrate`
 - Run `php artisan serve`
 
-
-### PHPunit test
-- Run `php artisan test`
-
-- Auth Test
-	- UserRegisterAPITest (Need to give unique data for test)
-
-
 ### API Endpoints
 - Auth
 	- `Register:(Method- POST) http://127.0.0.1:8000/api/v1/auth/register`
@@ -40,3 +32,20 @@ Tech Stack: Laravel, MySQL, JWT Authentication, PHPUnit
 	- `Store:(Method- POST) http://127.0.0.1:8000/api/v1/category`
 	- `Update:(Method- POST) http://127.0.0.1:8000/api/v1/category/1`
 	- `Delete:(Method- Delete) http://127.0.0.1:8000/api/v1/category/2`
+
+### PHPunit test
+- Run `php artisan test`
+
+- Auth Test
+	- UserRegisterAPITest (Need to give unique data for test)
+
+### Features added (Cover all code challenge)
+- User Authentication with JWT
+- Task Management with pagination and filtering
+- Authorization check by logic
+- Validation
+- PHPunit Test
+- User Profile update (bonus)
+- Task Categories (bonus)
+- Task reminder by mail notification (bonus)
+- Rate limiting added in Auth section (bonus)
