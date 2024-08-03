@@ -74,5 +74,4 @@ Task:
 - Rate limiting added in Auth section (bonus)
 
 ### Postman test screenshots
-```html
-   <img src="{{ asset('screenshots/1.png') }}" alt="Register API">
+![Register API](https://github.com/dev-hasanmahmud/task-management/blob/57583036d3df76615d1a251e78986991824d00a1/public/screenshots/1.png)
