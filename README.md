@@ -6,10 +6,18 @@ Tech Stack: Laravel, MySQL, JWT Authentication, PHPUnit
 
 - Clone the repository with `git clone`
 - Copy `.env.example` file to `.env` and edit database credentials there
+- Need to setup database and mail credentials for task Notification 
 - Run `composer install or composer update`
 - Run `php artisan key:generate`
 - Run `php artisan migrate`
 - Run `php artisan serve`
+
+
+### PHPunit test
+- Run `php artisan test`
+
+- Auth Test
+	- UserRegisterAPITest (Need to give unique data for test)
 
 
 ### API Endpoints
