@@ -35,9 +35,11 @@ Tech Stack: Laravel, MySQL, JWT Authentication, PHPUnit
 
 ### PHPunit test
 - Run `php artisan test`
+- Run specific test: `php artisan test --filter UserRegisterAPITest`
 
 - Auth Test
 	- UserRegisterAPITest (Need to give unique data for test)
+	- UserLoginAPITest
 
 ### Features added (Cover all code challenge)
 - User Authentication with JWT
