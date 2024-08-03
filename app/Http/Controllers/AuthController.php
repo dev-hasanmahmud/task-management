@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Validator;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Validator;
+use Exception;
 
 class AuthController extends Controller
 {
@@ -14,27 +16,31 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register() {
-        $validator = Validator::make(request()->all(), [
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed|min:8',
-        ]);
-  
-        if($validator->fails()){
-            return response()->json($validator->errors()->toJson(), 400);
+    public function register()
+    {
+        try {
+            $validator = Validator::make(request()->all(), [
+                'name' => 'required',
+                'email' => 'required|email|unique:users',
+                'password' => 'required|confirmed|min:8',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 400);
+            }
+
+            $user = new User;
+            $user->name = request()->name;
+            $user->email = request()->email;
+            $user->password = bcrypt(request()->password);
+            $user->save();
+
+            return response()->json($user, 201);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred during registration'], 500);
         }
-  
-        $user = new User;
-        $user->name = request()->name;
-        $user->email = request()->email;
-        $user->password = bcrypt(request()->password);
-        $user->save();
-  
-        return response()->json($user, 201);
     }
-  
-  
+
     /**
      * Get a JWT via given credentials.
      *
@@ -42,15 +48,19 @@ class AuthController extends Controller
      */
     public function login()
     {
-        $credentials = request(['email', 'password']);
-  
-        if (! $token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Something went Wrong!'], 401);
+        try {
+            $credentials = request(['email', 'password']);
+
+            if (!$token = auth()->attempt($credentials)) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            return $this->respondWithToken($token);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred during login'], 500);
         }
-  
-        return $this->respondWithToken($token);
     }
-  
+
     /**
      * Get the authenticated User.
      *
@@ -58,9 +68,13 @@ class AuthController extends Controller
      */
     public function profile()
     {
-        return response()->json(auth()->user());
+        try {
+            return response()->json(auth()->user());
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred while fetching the profile'], 500);
+        }
     }
-    
+
     /**
      * Update the authenticated user's profile.
      *
@@ -69,29 +83,35 @@ class AuthController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $validator = Validator::make(request()->all(), [
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed|min:8',
-        ]);
-  
-        if($validator->fails()){
-            return response()->json($validator->errors()->toJson(), 400);
-        }
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required',
+                'email' => 'required|email|unique:users,email,' . auth()->id(),
+                'password' => 'nullable|confirmed|min:8',
+            ]);
 
-        $user = auth()->user();
-        $user->name = $request->input('name');
-        $user->email = $request->input('email');
-        
-        if ($request->filled('password')) {
-            $user->password = bcrypt($request->input('password'));
-        }
-        
-        $user->save();
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 400);
+            }
 
-        return response()->json($user);
+            $user = auth()->user();
+            $user->name = $request->input('name');
+            $user->email = $request->input('email');
+            
+            if ($request->filled('password')) {
+                $user->password = bcrypt($request->input('password'));
+            }
+            
+            $user->save();
+
+            return response()->json($user);
+        } catch (ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred while updating the profile'], 500);
+        }
     }
-  
+
     /**
      * Log the user out (Invalidate the token).
      *
@@ -99,11 +119,14 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        auth()->logout();
-  
-        return response()->json(['message' => 'Successfully logged out']);
+        try {
+            auth()->logout();
+            return response()->json(['message' => 'Successfully logged out']);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred while logging out'], 500);
+        }
     }
-  
+
     /**
      * Refresh a token.
      *
@@ -111,9 +134,13 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->respondWithToken(auth()->refresh());
+        try {
+            return $this->respondWithToken(auth()->refresh());
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred while refreshing the token'], 500);
+        }
     }
-  
+
     /**
      * Get the token array structure.
      *

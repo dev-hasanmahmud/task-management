@@ -6,82 +6,124 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Exception;
 
 class TaskController extends Controller
 {
+    /**
+     * Display a listing of tasks.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index(Request $request)
     {
-        $query = Task::where('user_id', Auth::id());
-        
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->input('category_id'));
+        try {
+            $query = Task::where('user_id', Auth::id());
+
+            if ($request->has('category_id')) {
+                $query->where('category_id', $request->input('category_id'));
+            }
+
+            if ($request->has('status')) {
+                $query->where('status', $request->input('status'));
+            }
+
+            if ($request->has('due_date')) {
+                $query->whereDate('due_date', $request->input('due_date'));
+            }
+
+            $tasks = $query->with('category')->paginate(10);
+
+            return response()->json($tasks);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred while fetching tasks'], 500);
         }
-
-        if ($request->has('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
-        if ($request->has('due_date')) {
-            $query->whereDate('due_date', $request->input('due_date'));
-        }
-
-        $tasks = $query->with('category')->paginate(10);
-
-        return response()->json($tasks);
     }
 
+    /**
+     * Store a new task.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'nullable|date',
-            'category_id' => 'required|exists:categories,id',
-            'status' => ['required', Rule::in(['completed', 'pending'])],
-        ]);
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'due_date' => 'nullable|date',
+                'category_id' => 'required|exists:categories,id',
+                'status' => ['required', Rule::in(['completed', 'pending'])],
+            ]);
 
-        $task = Task::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'due_date' => $request->due_date,
-            'category_id' => $request->category_id,
-            'status' => $request->status,
-            'user_id' => Auth::id(),
-        ]);
+            $task = Task::create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'due_date' => $request->due_date,
+                'category_id' => $request->category_id,
+                'status' => $request->status,
+                'user_id' => Auth::id(),
+            ]);
 
-        return response()->json($task, 201);
+            return response()->json($task, 201);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred while creating the task'], 500);
+        }
     }
 
+    /**
+     * Update the specified task.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update(Request $request, $id)
     {
-        $task = Task::where('id', $id)->where('user_id', Auth::id())->first();
-        
-        if (empty($task) || $task->user_id !== Auth::id()) {
-            return response()->json(['error' => 'You can not able to access the Task!'], 403);
+        try {
+            $task = Task::where('id', $id)->where('user_id', Auth::id())->first();
+
+            if (!$task) {
+                return response()->json(['error' => 'Task not found or you are not authorized to access it'], 403);
+            }
+
+            $request->validate([
+                'title' => 'sometimes|required|string|max:255',
+                'description' => 'nullable|string',
+                'due_date' => 'nullable|date',
+                'status' => ['sometimes', Rule::in(['completed', 'pending'])],
+            ]);
+
+            $task->update($request->only(['title', 'description', 'due_date', 'category_id', 'status']));
+
+            return response()->json($task);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred while updating the task'], 500);
         }
-
-        $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'nullable|date',
-            'status' => ['sometimes', Rule::in(['completed', 'pending'])],
-        ]);
-
-        $task->update($request->only(['title', 'description', 'due_date', 'category_id', 'status']));
-
-        return response()->json($task);
     }
 
+    /**
+     * Remove the specified task.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function destroy($id)
     {
-        $task = Task::where('id', $id)->where('user_id', Auth::id())->first();
-        
-        if (empty($task) || $task->user_id !== Auth::id()) {
-            return response()->json(['error' => 'You can not able to access the Task!'], 403);
-        }
-        
-        $task->delete();
+        try {
+            $task = Task::where('id', $id)->where('user_id', Auth::id())->first();
 
-        return response()->json(['message' => 'Task deleted successfully.'], 200);
+            if (!$task) {
+                return response()->json(['error' => 'Task not found or you are not authorized to access it'], 403);
+            }
+
+            $task->delete();
+
+            return response()->json(['message' => 'Task deleted successfully.'], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'An error occurred while deleting the task'], 500);
+        }
     }
 }

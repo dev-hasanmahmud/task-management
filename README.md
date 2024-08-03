@@ -12,6 +12,27 @@ Tech Stack: Laravel, MySQL, JWT Authentication, PHPUnit
 - Run `php artisan migrate`
 - Run `php artisan serve`
 
+For API test:
+Auth:
+- You need at first register user
+- Login and get token
+- Refresh token by using existing token
+- Profile data get by using existing token
+- Profile data update by using existing token
+- User logout by using existing token
+
+Category:
+- Get all categories by using existing token
+- Store category by using existing token
+- Update category by using existing token
+- Delete category by using existing token
+
+Task:
+- Get all tasks by using existing token
+- Store task by using existing token
+- Update task by using existing token
+- Delete task by using existing token
+
 ### API Endpoints
 - Auth
 	- `Register:(Method- POST) http://127.0.0.1:8000/api/v1/auth/register`
@@ -51,3 +72,7 @@ Tech Stack: Laravel, MySQL, JWT Authentication, PHPUnit
 - Task Categories (bonus)
 - Task reminder by mail notification (bonus)
 - Rate limiting added in Auth section (bonus)
+
+### Postman test screenshots
+```html
+   <img src="{{ asset('screenshots/1.png') }}" alt="Register API">
